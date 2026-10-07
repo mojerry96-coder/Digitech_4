@@ -1,0 +1,116 @@
+/* ==========================================================
+   OPENER — the three logos arrive one at a time, then line up.
+   From Fix the Prompt (docs/OPENER.md), in canvas units.
+   ========================================================== */
+.intro {
+  position: fixed; inset: 0; z-index: 150;
+  display: grid; place-items: center;
+  padding: calc(24 * var(--px));
+  background: radial-gradient(ellipse at 50% 40%, #0C3F66 0%, var(--navy) 52%, #06243C 100%);
+  color: #fff;
+  overflow: hidden;
+  transition: opacity 650ms var(--ease);
+}
+.intro.out { opacity: 0; pointer-events: none; }
+.intro.gone { display: none; }
+
+.intro-motif {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  opacity: 0; transition: opacity 1600ms var(--ease);
+}
+.intro-motif::before {
+  content: "";
+  position: absolute; top: 50%; right: -14%;
+  width: min(calc(980 * var(--px)), 105vh); aspect-ratio: 1;
+  transform: translateY(-50%);
+  background: url("assets/logos/chevrons.svg") center / contain no-repeat;
+}
+.intro.st-line .intro-motif { opacity: 0.7; }
+
+.intro-inner { position: relative; display: grid; justify-items: center; text-align: center; }
+
+/* The row slides so whichever logos have arrived stay centred on screen */
+.intro-logos {
+  display: flex; align-items: center; justify-content: center;
+  gap: calc(46 * var(--px));
+  transform: translateX(var(--shift, 0));
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.intro-logo {
+  display: block;
+  opacity: 0;
+  transform: scale(1.1);
+  filter: blur(8px);
+  transition:
+    opacity 700ms var(--ease),
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 700ms var(--ease);
+}
+.intro-logo img { display: block; height: auto; }
+.lg-ekiti img { width: calc(74 * var(--px)); }
+.lg-miva img  { width: calc(164 * var(--px)); }
+.lg-tof img   { width: calc(118 * var(--px)); }
+.intro-logo.in { opacity: 1; filter: blur(0); }
+.intro-logo.set { transform: scale(1); }
+
+.intro-rule {
+  width: var(--hairline); height: calc(52 * var(--px));
+  background: rgba(255, 255, 255, 0.34);
+  opacity: 0; transform: scaleY(0.4);
+  transition: opacity 600ms var(--ease), transform 700ms var(--ease);
+}
+.intro.st-line .intro-rule { opacity: 1; transform: scaleY(1); }
+
+.intro-tagline {
+  margin-top: calc(36 * var(--px));
+  font-size: calc(17 * var(--px)); font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--cream);
+  opacity: 0; transform: translateY(calc(6 * var(--px)));
+  transition: opacity 700ms var(--ease), transform 700ms var(--ease);
+}
+.intro.st-line .intro-tagline { opacity: 0.85; transform: none; }
+
+.intro-title {
+  margin-top: calc(20 * var(--px));
+  font-family: var(--font-display); font-weight: 650;
+  font-size: calc(72 * var(--px)); line-height: 1; letter-spacing: -0.025em;
+  color: #fff; text-transform: uppercase;
+  opacity: 0; transform: translateY(calc(10 * var(--px)));
+  transition: opacity 800ms var(--ease), transform 900ms var(--ease);
+}
+.intro-title .accent { color: var(--amber); }
+.intro-sub {
+  margin-top: calc(18 * var(--px));
+  font-size: calc(17 * var(--px)); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(214, 228, 250, 0.72);
+  opacity: 0; transition: opacity 800ms var(--ease);
+}
+.intro.st-title .intro-title { opacity: 1; transform: none; }
+.intro.st-title .intro-sub { opacity: 1; transition-delay: 200ms; }
+
+/* On the navy ground amber is the action colour, with brown text for contrast */
+.intro-begin {
+  margin-top: calc(44 * var(--px));
+  background: var(--amber); color: var(--brown);
+  opacity: 0; transform: translateY(calc(8 * var(--px))); pointer-events: none;
+  transition: opacity 700ms var(--ease), transform 700ms var(--ease), background 200ms var(--ease);
+}
+.intro-begin:hover:not(:disabled) { background: #FFB01F; }
+.intro-begin:focus-visible { outline-color: var(--cream); }
+.intro.st-begin .intro-begin { opacity: 1; transform: none; pointer-events: auto; }
+
+.intro-skip {
+  position: absolute; right: calc(28 * var(--px)); bottom: max(calc(28 * var(--px)), env(safe-area-inset-bottom));
+  display: inline-flex; align-items: center; gap: calc(10 * var(--px));
+  min-height: calc(62 * var(--px)); padding: 0 calc(20 * var(--px)); border-radius: 999px;
+  border: var(--hairline) solid rgba(255, 255, 255, 0.24); background: transparent;
+  color: rgba(214, 228, 250, 0.85); font-size: calc(17 * var(--px)); font-weight: 600; cursor: pointer;
+  transition: opacity 300ms var(--ease), color 200ms var(--ease);
+}
+.intro-skip:hover { color: #fff; }
+.intro-skip kbd {
+  font-family: var(--font-body); font-size: calc(15 * var(--px));
+  padding: calc(2 * var(--px)) calc(7 * var(--px)); border-radius: calc(6 * var(--px));
+  border: var(--hairline) solid rgba(255, 255, 255, 0.28); color: rgba(214, 228, 250, 0.75); background: transparent;
+}
+.intro.st-begin .intro-skip { opacity: 0; pointer-events: none; }

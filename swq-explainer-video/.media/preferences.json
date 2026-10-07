@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "preferences": {
+    "flow": {
+      "value": "automation",
+      "confirmed_in": [
+        "swq-explainer-video"
+      ],
+      "updated_at": "2026-10-07T13:34:37.105Z"
+    },
+    "storyboard": {
+      "value": "yes",
+      "confirmed_in": [
+        "swq-explainer-video"
+      ],
+      "updated_at": "2026-10-07T13:34:37.143Z"
+    }
+  },
+  "sightings": {}
+}

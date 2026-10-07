@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spot the Weak Question — explainer storyboard v2</title>
+<style>
+  @font-face { font-family: "Afacad"; src: url("assets/fonts/afacad-latin-var.woff2") format("woff2"); font-weight: 400 700; }
+  @font-face { font-family: "Manrope"; src: url("assets/fonts/manrope-latin-var.woff2") format("woff2"); font-weight: 400 800; }
+
+  :root {
+    --ink: #0A2437; --mid: #4C5C6B; --soft: #5F6C78; --accent: #1D5BD6; --navy: #09314F;
+    --amber: #EE9B01; --brown: #472E00; --cream: #FCEBCC; --paper: #FDF8EF;
+    --mint-100: #E7F4EC; --mint-700: #1C7A4B; --rose-100: #FBE7E2; --rose-700: #A3342A;
+    --line: rgba(9, 49, 79, 0.14);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #EDE6D8; color: var(--ink); font-family: "Manrope", system-ui, sans-serif; }
+  .sheet { max-width: 1680px; margin: 0 auto; padding: 48px 32px 80px; }
+  header.top { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
+  header.top h1 { font-family: "Afacad"; font-weight: 650; font-size: 40px; letter-spacing: -0.02em; margin: 0; }
+  header.top h1 small { font-size: 18px; font-weight: 600; color: var(--soft); margin-left: 10px; }
+  header.top p { margin: 6px 0 0; color: var(--mid); font-size: 16px; max-width: 70ch; }
+  .tag { font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); white-space: nowrap; }
+  .act { grid-column: 1 / -1; font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #8A5B00; padding: 6px 0 0; border-top: 2px solid rgba(138, 91, 0, 0.25); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 22px; }
+  .cell { display: grid; gap: 8px; align-content: start; }
+  .label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; }
+  .label span:last-child { color: var(--soft); font-weight: 600; }
+  .note { margin: 0; font-size: 14px; line-height: 1.45; color: var(--mid); }
+  .note b { color: var(--ink); }
+  .chip { justify-self: start; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #fff; border: 1px dashed rgba(9, 49, 79, 0.3); color: var(--navy); }
+
+  /* ---------- The 16:9 frame: sized in canvas units (1920 wide) ---------- */
+  .frame {
+    --u: calc(100cqw / 1920);
+    position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 10px;
+    background: linear-gradient(180deg, #FFFDF8 0%, #FDF7EC 100%);
+    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(9, 49, 79, 0.10);
+  }
+  .wrap { container-type: inline-size; }
+  .bloom { position: absolute; width: calc(1100 * var(--u)); aspect-ratio: 1; border-radius: 50%; filter: blur(calc(40 * var(--u))); }
+  .b-blue { left: calc(-420 * var(--u)); top: calc(-560 * var(--u)); background: radial-gradient(circle, rgba(29, 91, 214, 0.16), transparent 62%); }
+  .b-cream { right: calc(-380 * var(--u)); top: calc(-520 * var(--u)); background: radial-gradient(circle, rgba(252, 235, 204, 0.95), transparent 64%); }
+  .b-amber { left: calc(-360 * var(--u)); bottom: calc(-620 * var(--u)); background: radial-gradient(circle, rgba(238, 155, 1, 0.16), transparent 62%); }
+  .b-mint { right: calc(-420 * var(--u)); bottom: calc(-600 * var(--u)); background: radial-gradient(circle, rgba(39, 200, 138, 0.13), transparent 62%); }
+
+  .abs { position: absolute; }
+  .disp { font-family: "Afacad", system-ui, sans-serif; font-weight: 650; letter-spacing: -0.03em; line-height: 1; }
+  .headline { position: absolute; left: 0; right: 0; text-align: center; font-family: "Afacad"; font-weight: 650; font-size: calc(92 * var(--u)); letter-spacing: -0.03em; color: var(--mid); line-height: 1.05; }
+  .headline em { font-style: normal; color: var(--accent); }
+  .headline b { font-weight: 650; color: var(--ink); }
+
+  /* ---------- Simulation UI, rebuilt ---------- */
+  .window {
+    position: absolute; background: #FFFDF8; border-radius: calc(36 * var(--u));
+    border: calc(2 * var(--u)) solid rgba(9, 49, 79, 0.12);
+    box-shadow: 0 calc(40 * var(--u)) calc(120 * var(--u)) rgba(9, 49, 79, 0.16), 0 0 0 calc(3 * var(--u)) rgba(29, 91, 214, 0.08);
+    overflow: hidden;
+  }
+  .tilt { transform: perspective(calc(2000 * var(--u))) rotateY(-10deg) rotateX(4deg); }
+  .soft { filter: blur(calc(14 * var(--u))); opacity: 0.45; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: calc(26 * var(--u)) calc(36 * var(--u)); font-size: calc(24 * var(--u)); font-weight: 600; color: var(--soft); }
+  .brand { display: flex; align-items: center; gap: calc(14 * var(--u)); color: var(--ink); font-weight: 700; }
+  .brand img { width: calc(36 * var(--u)); }
+  .stage { color: var(--navy); }
+  .thread { position: absolute; left: calc(120 * var(--u)); right: calc(120 * var(--u)); display: flex; flex-direction: column; gap: calc(26 * var(--u)); }
+  .eyebrow { font-size: calc(20 * var(--u)); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #C67F01; }
+  .stepline { font-family: "Afacad"; font-weight: 600; font-size: calc(36 * var(--u)); letter-spacing: -0.02em; color: var(--ink); line-height: 1.15; }
+  .meta { align-self: flex-end; font-size: calc(20 * var(--u)); font-weight: 600; color: var(--soft); margin-bottom: calc(-16 * var(--u)); }
+  .bubble { align-self: flex-end; max-width: 78%; background: var(--cream); color: var(--brown); border: calc(2 * var(--u)) solid rgba(71, 46, 0, 0.14); border-radius: calc(32 * var(--u)) calc(32 * var(--u)) calc(8 * var(--u)) calc(32 * var(--u)); padding: calc(20 * var(--u)) calc(30 * var(--u)); font-size: calc(30 * var(--u)); line-height: 1.45; }
+  .ai { display: flex; gap: calc(20 * var(--u)); align-items: flex-start; }
+  .avatar { flex: none; width: calc(62 * var(--u)); height: calc(62 * var(--u)); border-radius: 50%; overflow: hidden; background: var(--paper); border: calc(2 * var(--u)) solid var(--line); }
+  .avatar img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .avatar.kemi img { object-fit: cover; object-position: 50% 12%; transform: scale(1.6); transform-origin: 50% 8%; }
+  .reply { background: #fff; border: calc(2 * var(--u)) solid var(--line); border-radius: calc(28 * var(--u)); padding: calc(26 * var(--u)) calc(32 * var(--u)); font-size: calc(30 * var(--u)); line-height: 1.5; color: #33414E; }
+  .badges { display: flex; align-items: center; gap: calc(16 * var(--u)); margin-bottom: calc(14 * var(--u)); }
+  .badge { display: inline-flex; align-items: center; gap: calc(10 * var(--u)); padding: calc(8 * var(--u)) calc(20 * var(--u)); border-radius: 999px; font-size: calc(24 * var(--u)); font-weight: 800; }
+  .badge.res { background: var(--mint-100); color: var(--mint-700); border: calc(2 * var(--u)) solid rgba(18, 151, 103, 0.22); }
+  .badge.res::before { content: ""; width: calc(20 * var(--u)); height: calc(22 * var(--u)); background: currentColor; clip-path: polygon(50% 0, 100% 18%, 100% 55%, 50% 100%, 0 55%, 0 18%); }
+  .badge-note { font-size: calc(24 * var(--u)); color: var(--mid); }
+  .coach { flex: 1; display: flex; gap: calc(16 * var(--u)); background: var(--mint-100); color: #173F2B; border-radius: calc(28 * var(--u)); padding: calc(24 * var(--u)) calc(30 * var(--u)); font-size: calc(28 * var(--u)); line-height: 1.5; }
+  .tick { flex: none; width: calc(36 * var(--u)); height: calc(36 * var(--u)); border-radius: 50%; border: calc(4 * var(--u)) solid var(--mint-700); position: relative; margin-top: calc(4 * var(--u)); }
+  .tick::after { content: ""; position: absolute; left: 28%; top: 18%; width: 30%; height: 50%; border: solid var(--mint-700); border-width: 0 calc(4 * var(--u)) calc(4 * var(--u)) 0; transform: rotate(45deg); }
+
+  .composer { position: absolute; background: #fff; border: calc(2 * var(--u)) solid rgba(9, 49, 79, 0.26); border-radius: calc(32 * var(--u)); box-shadow: 0 calc(20 * var(--u)) calc(60 * var(--u)) rgba(7, 17, 39, 0.08); }
+  .composer.focus { border-color: var(--accent); box-shadow: 0 0 0 calc(6 * var(--u)) rgba(29, 91, 214, 0.12), 0 calc(20 * var(--u)) calc(60 * var(--u)) rgba(7, 17, 39, 0.10); }
+  .c-text { padding: calc(28 * var(--u)) calc(34 * var(--u)) calc(10 * var(--u)); font-size: calc(32 * var(--u)); line-height: 1.45; color: var(--ink); }
+  .c-foot { display: flex; align-items: center; justify-content: space-between; padding: calc(8 * var(--u)) calc(14 * var(--u)) calc(14 * var(--u)) calc(34 * var(--u)); font-size: calc(22 * var(--u)); color: var(--soft); }
+  .ask { display: inline-flex; align-items: center; gap: calc(10 * var(--u)); height: calc(74 * var(--u)); padding: 0 calc(34 * var(--u)); border-radius: 999px; background: var(--accent); color: #fff; font-size: calc(28 * var(--u)); font-weight: 700; position: relative; }
+  .send { width: calc(74 * var(--u)); height: calc(74 * var(--u)); border-radius: 50%; background: var(--accent); display: grid; place-items: center; color: #fff; font-size: calc(34 * var(--u)); font-weight: 800; }
+  .dots { display: inline-flex; align-items: center; gap: calc(10 * var(--u)); font-weight: 600; color: var(--mid); }
+  .dots i { width: calc(16 * var(--u)); height: calc(16 * var(--u)); border-radius: 50%; border: calc(3 * var(--u)) solid var(--accent); background: #fff; }
+  .dots i.on { background: var(--accent); }
+  .caret { display: inline-block; width: calc(3 * var(--u)); height: 1.1em; background: var(--accent); vertical-align: -0.15em; margin-left: calc(2 * var(--u)); }
+  .sel { background: rgba(29, 91, 214, 0.18); }
+
+  .judge { position: absolute; background: rgba(255, 255, 255, 0.96); border: calc(2 * var(--u)) solid rgba(9, 49, 79, 0.2); border-radius: calc(36 * var(--u)); padding: calc(28 * var(--u)) calc(30 * var(--u)); box-shadow: 0 calc(24 * var(--u)) calc(70 * var(--u)) rgba(7, 17, 39, 0.10); }
+  .judge-q { font-size: calc(28 * var(--u)); font-weight: 800; margin-bottom: calc(18 * var(--u)); }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: calc(18 * var(--u)); }
+  .opt { display: grid; grid-template-columns: auto 1fr; gap: calc(18 * var(--u)); padding: calc(22 * var(--u)) calc(24 * var(--u)); border: calc(2 * var(--u)) solid rgba(9, 49, 79, 0.26); border-radius: calc(26 * var(--u)); background: #fff; }
+  .opt.on { border-color: var(--accent); box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--accent); background: #F4F8FF; }
+  .radio { width: calc(34 * var(--u)); height: calc(34 * var(--u)); border-radius: 50%; border: calc(3 * var(--u)) solid rgba(9, 49, 79, 0.3); margin-top: calc(2 * var(--u)); }
+  .opt.on .radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 calc(7 * var(--u)) #fff; }
+  .opt b { display: block; font-size: calc(30 * var(--u)); }
+  .opt small { display: block; margin-top: calc(6 * var(--u)); font-size: calc(23 * var(--u)); line-height: 1.4; color: var(--mid); }
+
+  .cursor { position: absolute; width: calc(76 * var(--u)); filter: drop-shadow(0 calc(6 * var(--u)) calc(10 * var(--u)) rgba(7, 17, 39, 0.25)); }
+  .ripple { position: absolute; border-radius: 50%; border: calc(3 * var(--u)) solid rgba(29, 91, 214, 0.45); }
+  .thinkbar { height: calc(14 * var(--u)); border-radius: 999px; background: #FBF0DB; overflow: hidden; }
+  .thinkbar i { display: block; height: 100%; width: 100%; background: var(--accent); border-radius: inherit; }
+
+  .weak { display: inline-block; background: var(--amber); color: var(--brown); padding: 0 calc(26 * var(--u)) calc(10 * var(--u)); border-radius: calc(20 * var(--u)); transform: rotate(-3deg); margin: 0 calc(10 * var(--u)); }
+  .pill { display: inline-flex; align-items: center; gap: calc(16 * var(--u)); height: calc(104 * var(--u)); padding: 0 calc(58 * var(--u)); border-radius: 999px; background: var(--accent); color: #fff; font-size: calc(40 * var(--u)); font-weight: 800; }
+
+  /* ---------- Closing cells ---------- */
+  .info { background: #fff; border-radius: 10px; padding: 18px 20px; aspect-ratio: 16 / 9; overflow: hidden; box-shadow: 0 8px 24px rgba(9, 49, 79, 0.08); font-size: 13px; line-height: 1.45; }
+  .info h3 { margin: 0 0 10px; font-family: "Afacad"; font-size: 22px; font-weight: 650; }
+  .seams { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-top: 8px; }
+  .seams div { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 6px 5px; font-size: 11px; font-weight: 700; min-height: 96px; }
+  .seams span { display: block; margin-top: 4px; font-weight: 500; color: var(--mid); }
+  .sw { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+  .sw i { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="top">
+    <div>
+      <h1>Spot the Weak Question: explainer <small>storyboard v2</small></h1>
+      <p>Replaces the captioned walkthrough. One floating chat window (the simulation's own UI); the question card rides through every beat and finally becomes the "Let's begin" button. Silent: headlines carry the teaching.</p>
+    </div>
+    <span class="tag">1920×1080 · 30.0s · 9 beats · silent</span>
+  </header>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="hand" viewBox="0 0 32 38">
+        <path d="M11 2.5c1.4 0 2.5 1.1 2.5 2.5v9.2l1-.1c.4-1.1 1.4-1.8 2.5-1.8 1.3 0 2.3.9 2.5 2.1.5-.3 1-.4 1.6-.4 1.3 0 2.4 1 2.5 2.3.4-.2.9-.3 1.4-.3 1.4 0 2.5 1.1 2.5 2.5v7c0 5-4 9-9 9h-2.6c-2.7 0-5.2-1.3-6.8-3.4l-5.6-7.6c-.8-1.1-.6-2.7.5-3.5 1-.8 2.5-.7 3.4.3l1.6 1.8V5c0-1.4 1.1-2.5 2.5-2.5z" fill="#fff" stroke="#0A2437" stroke-width="2" stroke-linejoin="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="grid">
+    <div class="act">Act 1 · Ask like a student (01–03)</div>
+
+    <!-- 01 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-01">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="abs disp" style="left:0;right:0;top:calc(452 * var(--u));text-align:center;font-size:calc(150 * var(--u));color:var(--ink)">
+          Spot the<span class="weak">Weak</span>Question
+        </div>
+        <div class="abs" style="left:0;right:0;top:calc(650 * var(--u));text-align:center;font-size:calc(26 * var(--u));font-weight:800;letter-spacing:.1em;color:#C67F01;opacity:.0">THE FLIP TEST</div>
+      </div></div>
+      <div class="label"><span>01 · TITLE</span><span>title · 0.0–2.3s</span></div>
+      <p class="note"><b>"The flip test" blurs in and out first.</b> Then "Spot the" and "Question" blur in with a gap between them, and "Weak" pops in last on the amber block. The lockup scales up and blurs out to fly into the window.</p>
+      <span class="chip">seam → fly-through (scale + blur)</span>
+    </section>
+
+    <!-- 02 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-02">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="window tilt" style="left:calc(400 * var(--u));top:calc(150 * var(--u));width:calc(1180 * var(--u));height:calc(800 * var(--u))">
+          <div class="topbar"><span class="brand"><img src="assets/img/miva-mark.png" alt="">Spot the Weak Question</span><span class="stage">Run the flip test</span></div>
+          <div class="thread" style="top:calc(150 * var(--u))">
+            <span class="eyebrow">Run the flip test</span>
+            <span class="stepline">Ask the AI each question, the way a student would.</span>
+          </div>
+          <div class="composer" style="left:calc(120 * var(--u));right:calc(120 * var(--u));bottom:calc(46 * var(--u))">
+            <div class="c-text">Define opportunity cost.</div>
+            <div class="c-foot"><span>Send it as a student would</span><span class="ask">Ask AI ↑</span></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="label"><span>02 · WINDOW RISE</span><span>product_intro · 2.3–4.0s</span></div>
+      <p class="note"><b>The window rises from bottom-right, out of focus,</b> and settles into its 3D tilt as it sharpens. The demo question sits ready in the composer.</p>
+      <span class="chip">seam → defocus hand-off (composer stays sharp)</span>
+    </section>
+
+    <!-- 03 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-03">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="window tilt soft" style="left:calc(400 * var(--u));top:calc(150 * var(--u));width:calc(1180 * var(--u));height:calc(800 * var(--u))"></div>
+        <div class="headline" style="top:calc(210 * var(--u))">Ask it <em>like a student</em> would</div>
+        <div class="composer focus" style="left:calc(360 * var(--u));width:calc(1200 * var(--u));top:calc(500 * var(--u))">
+          <div class="c-text" style="font-size:calc(40 * var(--u))">Define opportunity cost.</div>
+          <div class="c-foot"><span>Send it as a student would</span><span class="ask" style="height:calc(86 * var(--u));font-size:calc(32 * var(--u))">Ask AI ↑</span></div>
+        </div>
+        <div class="ripple" style="left:calc(1330 * var(--u));top:calc(620 * var(--u));width:calc(150 * var(--u));height:calc(150 * var(--u))"></div>
+        <svg class="cursor" style="left:calc(1392 * var(--u));top:calc(668 * var(--u))"><use href="#hand"/></svg>
+      </div></div>
+      <div class="label"><span>03 · ASK LIKE A STUDENT</span><span>feature · 4.0–7.0s</span></div>
+      <p class="note"><b>The window blurs back while the composer stays sharp and comes forward.</b> The headline builds word by word. The hand cursor arcs in, presses Ask AI and sends out a ripple. The composer then morphs into a cream message bubble.</p>
+      <span class="chip">seam → shape morph (composer → bubble)</span>
+    </section>
+
+    <div class="act">Act 2 · Answer and judge (04–06)</div>
+
+    <!-- 04 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-04">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="window" style="left:calc(170 * var(--u));top:calc(70 * var(--u));width:calc(1580 * var(--u));height:calc(1060 * var(--u))">
+          <div class="thread" style="top:calc(120 * var(--u));left:calc(150 * var(--u));right:calc(150 * var(--u));gap:calc(32 * var(--u))">
+            <span class="meta" style="font-size:calc(26 * var(--u))">Question</span>
+            <div class="bubble" style="font-size:calc(38 * var(--u))">Define opportunity cost.</div>
+            <div class="ai">
+              <span class="avatar" style="width:calc(84 * var(--u));height:calc(84 * var(--u))"><img src="assets/img/sage-avatar.png" alt=""></span>
+              <div style="flex:1;display:grid;gap:calc(20 * var(--u))">
+                <div class="thinkbar" style="width:calc(420 * var(--u));opacity:.35"><i></i></div>
+                <div class="reply" style="font-size:calc(40 * var(--u))">Opportunity cost is the value of the next best alternative you give up when you make a choice.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="label"><span>04 · SAGE ANSWERS</span><span>feature · 7.0–9.6s</span></div>
+      <p class="note"><b>The camera pushes in on Sage and flattens the window.</b> A thinking bar fills in about 0.6s and retracts, and a complete textbook answer lands line by line: instant, and with nothing about your course.</p>
+      <span class="chip">seam → anchor (reply stays, panel rises)</span>
+    </section>
+
+        <!-- 05 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-05">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="window soft" style="left:calc(170 * var(--u));top:calc(70 * var(--u));width:calc(1580 * var(--u));height:calc(1060 * var(--u))"></div>
+        <div class="headline" style="top:calc(96 * var(--u));color:var(--ink)">Judge it.</div>
+        <div class="abs ai" style="left:calc(300 * var(--u));right:calc(300 * var(--u));top:calc(250 * var(--u))">
+          <span class="avatar"><img src="assets/img/sage-avatar.png" alt=""></span>
+          <div class="reply" style="flex:1">Opportunity cost is the value of the next best alternative you give up when you make a choice.</div>
+        </div>
+        <div class="judge" style="left:calc(300 * var(--u));right:calc(300 * var(--u));top:calc(560 * var(--u))">
+          <div class="judge-q">Is this question…</div>
+          <div class="opts">
+            <div class="opt on"><span class="radio"></span><span><b>Vulnerable</b><small>AI can answer it without anything from your course.</small></span></div>
+            <div class="opt"><span class="radio"></span><span><b>Resilient</b><small>AI can't answer it without something only your class has.</small></span></div>
+          </div>
+        </div>
+        <svg class="cursor" style="left:calc(470 * var(--u));top:calc(735 * var(--u))"><use href="#hand"/></svg>
+      </div></div>
+      <div class="label"><span>05 · JUDGE IT</span><span>feature · 9.6–12.6s</span></div>
+      <p class="note"><b>The judgement panel rises under the reply; both cards have equal weight</b> until the cursor picks Vulnerable. The radio dot swells with a small overshoot, then the camera rushes into it and through to the next scene.</p>
+      <span class="chip">seam → zoom-through (radio dot)</span>
+    </section>
+
+    <!-- 06 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-06">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="headline" style="top:calc(70 * var(--u))"><b>Instant answer</b> = <em>weak question</em></div>
+        <div class="window" style="left:calc(150 * var(--u));top:calc(220 * var(--u));width:calc(1620 * var(--u));height:calc(980 * var(--u));transform:perspective(calc(2000 * var(--u))) rotateY(-5deg) rotateX(2deg)">
+          <div class="thread" style="top:calc(70 * var(--u));left:calc(110 * var(--u));right:calc(110 * var(--u));gap:calc(32 * var(--u))">
+            <span class="meta" style="font-size:calc(28 * var(--u))">Your judgement</span>
+            <div class="bubble" style="font-weight:800;font-size:calc(42 * var(--u))">Vulnerable</div>
+            <div class="ai">
+              <span class="avatar kemi" style="width:calc(84 * var(--u));height:calc(84 * var(--u))"><img src="assets/img/kemi-talk.png" alt=""></span>
+              <div class="coach" style="font-size:calc(40 * var(--u));padding:calc(32 * var(--u)) calc(40 * var(--u))"><span class="tick" style="width:calc(46 * var(--u));height:calc(46 * var(--u))"></span><span><b>Yes, vulnerable.</b> AI answered without knowing anything about your course. A student could paste that straight in.</span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="label"><span>06 · VERDICT (HELD)</span><span>benefit · 12.6–15.4s</span></div>
+      <p class="note"><b>Kemi's card assembles inside the dot's white-out</b>, and the camera settles close on the thread with only a slight tilt, so the feedback reads large. The rule of thumb lands and <b>holds still for 0.9s</b>; only a slow camera drift moves.</p>
+      <span class="chip">seam → camera push (to composer)</span>
+    </section>
+
+        <div class="act">Act 3 · Redesign and begin (07–09)</div>
+
+    <!-- 07 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-07">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="window soft" style="left:calc(170 * var(--u));top:calc(70 * var(--u));width:calc(1580 * var(--u));height:calc(1060 * var(--u))"></div>
+        <div class="headline" style="top:calc(180 * var(--u))">Make it need <em>your class</em></div>
+        <div class="composer focus" style="left:calc(260 * var(--u));right:calc(260 * var(--u));top:calc(430 * var(--u))">
+          <div class="c-text" style="font-size:calc(44 * var(--u));padding-top:calc(36 * var(--u))">Using the price data from our week-two market survey, what was the stall's opportunity cost?<span class="caret"></span></div>
+          <div class="c-foot" style="font-size:calc(26 * var(--u))"><span class="dots"><i></i><i></i>2 tries left</span><span class="send">↑</span></div>
+        </div>
+      </div></div>
+      <div class="label"><span>07 · MAKE IT NEED YOUR CLASS</span><span>feature · 15.4–20.4s</span></div>
+      <p class="note"><b>The camera pushes onto the composer.</b> "Define opportunity cost." is selected and retyped at about 18 characters a second as a question about the class's own survey data. Send fills one try dot, and the composer collapses into a new bubble.</p>
+      <span class="chip">seam → shape morph (composer → bubble)</span>
+    </section>
+
+    <!-- 08 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-08">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="headline" style="top:calc(70 * var(--u))">Now AI <em>can't</em> answer it</div>
+        <div class="window" style="left:calc(150 * var(--u));top:calc(220 * var(--u));width:calc(1620 * var(--u));height:calc(980 * var(--u));transform:perspective(calc(2000 * var(--u))) rotateY(-5deg) rotateX(2deg)">
+          <div class="thread" style="top:calc(60 * var(--u));left:calc(110 * var(--u));right:calc(110 * var(--u));gap:calc(30 * var(--u))">
+            <div class="bubble" style="font-size:calc(34 * var(--u))">Using the price data from our week-two market survey, what was the stall's opportunity cost?</div>
+            <div class="ai">
+              <span class="avatar" style="width:calc(84 * var(--u));height:calc(84 * var(--u))"><img src="assets/img/sage-avatar.png" alt=""></span>
+              <div style="flex:1">
+                <div class="badges"><span class="badge res" style="font-size:calc(32 * var(--u));padding:calc(10 * var(--u)) calc(26 * var(--u))">Resilient</span><span class="badge-note" style="font-size:calc(30 * var(--u))">It depends on data only your class has.</span></div>
+                <div class="reply" style="font-size:calc(40 * var(--u))">I don't have the data from your week two session, so I can't answer this properly.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="label"><span>08 · NOW AI CAN'T</span><span>benefit · 20.4–25.0s</span></div>
+      <p class="note"><b>Sage thinks, then admits it can't answer.</b> The Resilient badge pops in with a small overshoot. After the headline, everything except the badge blurs away, leaving it alone at the centre.</p>
+      <span class="chip">seam → isolation (badge stays)</span>
+    </section>
+
+    <!-- 09 -->
+    <section class="cell">
+      <div class="wrap"><div class="frame" id="frame-09">
+        <div class="bloom b-blue"></div><div class="bloom b-cream"></div><div class="bloom b-amber"></div><div class="bloom b-mint"></div>
+        <div class="abs" style="left:0;right:0;top:calc(250 * var(--u));display:flex;justify-content:center;align-items:center;gap:calc(26 * var(--u))">
+          <img src="assets/img/miva-mark.png" alt="" style="width:calc(84 * var(--u))">
+          <span class="disp" style="font-size:calc(96 * var(--u));color:var(--ink)">Spot the <span class="weak" style="padding:0 calc(18 * var(--u)) calc(6 * var(--u));margin:0 calc(6 * var(--u))">Weak</span> Question</span>
+        </div>
+        <div class="abs" style="left:0;right:0;top:calc(500 * var(--u));text-align:center"><span class="pill">Let's begin →</span></div>
+        <div class="abs" style="left:0;right:0;top:calc(690 * var(--u));text-align:center;font-size:calc(32 * var(--u));font-weight:600;color:var(--mid)">3 questions to test · 2 to redesign · 1 on your own</div>
+      </div></div>
+      <div class="label"><span>09 · LET'S BEGIN</span><span>cta · 25.0–30.0s</span></div>
+      <p class="note"><b>The badge grows, its fill sweeps from mint to accent blue, and it morphs into the Let's begin pill.</b> The mark and title blur in above it and the plan line below. Then a 1.5s hold with a slow push-in and drifting blooms.</p>
+      <span class="chip">end · hold 1.5s</span>
+    </section>
+
+    <div class="act">Reference</div>
+
+    <section class="cell">
+      <div class="info">
+        <h3>Seam map</h3>
+        <div class="seams">
+          <div>01→02<span>fly-through: scale + blur</span></div>
+          <div>02→03<span>defocus, composer anchor</span></div>
+          <div>03→04<span>morph: composer → bubble</span></div>
+          <div>04→05<span>anchor: reply stays</span></div>
+          <div>05→06<span>zoom-through radio dot</span></div>
+          <div>06→07<span>camera push to composer</span></div>
+          <div>07→08<span>morph: composer → bubble</span></div>
+          <div>08→09<span>isolate badge, morph → pill</span></div>
+          <div>09<span>hold, push-in, blooms</span></div>
+        </div>
+        <p style="margin:10px 0 0;color:var(--mid)">Every seam hands off a shared object; seams overlap 0.08–0.15s. The camera always travels left and up into the next beat.</p>
+      </div>
+    </section>
+
+    <section class="cell">
+      <div class="info">
+        <h3>Tokens</h3>
+        <div class="sw">
+          <i style="background:#FDF7EC"></i><i style="background:#FCEBCC"></i><i style="background:#0A2437"></i><i style="background:#4C5C6B"></i><i style="background:#1D5BD6"></i><i style="background:#09314F"></i><i style="background:#EE9B01"></i><i style="background:#E7F4EC"></i><i style="background:#FBE7E2"></i>
+        </div>
+        <p style="margin:0"><b>Display:</b> Afacad 650, 84–150px · <b>UI:</b> Manrope 500–800, 24–44px · <b>Labels:</b> Manrope 800 caps.</p>
+        <p style="margin:6px 0 0"><b>Easing:</b> emphasized-decel (0.05, 0.7, 0.1, 1) for entrances · emphasized-accel for exits · standard for the cursor and morphs · back.out(1.6) for pops.</p>
+        <p style="margin:6px 0 0"><b>Bans:</b> gradient text, glow on type, slideshow cuts, motion with no meaning, assessed questions, sound.</p>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

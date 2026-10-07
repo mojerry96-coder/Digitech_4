@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/CustomEase.min.js"></script>
+    <style>
+      @font-face { font-family: "Afacad"; src: url("assets/fonts/afacad-latin-var.woff2") format("woff2"); font-weight: 400 700; }
+      @font-face { font-family: "Manrope"; src: url("assets/fonts/manrope-latin-var.woff2") format("woff2"); font-weight: 400 800; }
+
+      :root {
+        --ink: #0A2437; --mid: #4C5C6B; --soft: #5F6C78; --accent: #1D5BD6; --navy: #09314F;
+        --amber: #EE9B01; --brown: #472E00; --cream: #FCEBCC; --paper: #FDF8EF;
+        --mint-100: #E7F4EC; --mint-700: #1C7A4B; --line: rgba(9, 49, 79, 0.14);
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #FDF7EC; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Manrope", sans-serif; color: var(--ink); }
+
+      /* ---------- Shared background: off-white ground + four drifting blooms (not a clip) ---------- */
+      #bg { position: absolute; inset: 0; background: linear-gradient(180deg, #FFFDF8 0%, #FDF7EC 100%); overflow: hidden; }
+      .bloom { position: absolute; width: 1100px; height: 1100px; border-radius: 50%; filter: blur(40px); }
+      #bl-blue { left: -420px; top: -560px; background: radial-gradient(circle, rgba(29, 91, 214, 0.16), transparent 62%); }
+      #bl-cream { left: 1240px; top: -520px; background: radial-gradient(circle, rgba(252, 235, 204, 0.95), transparent 64%); }
+      #bl-amber { left: -360px; top: 600px; background: radial-gradient(circle, rgba(238, 155, 1, 0.16), transparent 62%); }
+      #bl-mint { left: 1240px; top: 580px; background: radial-gradient(circle, rgba(39, 200, 138, 0.13), transparent 62%); }
+
+      #film { position: absolute; inset: 0; }
+      #cam { position: absolute; inset: 0; transform-origin: 50% 50%; }
+      .shot { position: absolute; inset: 0; }
+      .abs { position: absolute; }
+
+      /* ---------- Type ---------- */
+      .disp { font-family: "Afacad", sans-serif; font-weight: 650; letter-spacing: -0.03em; line-height: 1; }
+      .headline { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 0 0.26em; font-family: "Afacad", sans-serif; font-weight: 650; font-size: 92px; letter-spacing: -0.03em; color: var(--mid); line-height: 1.05; }
+      .w { display: inline-block; will-change: transform, filter, opacity; }
+      .w.em { color: var(--accent); }
+      .w.k { color: var(--ink); }
+
+      /* ---------- The simulation's UI, rebuilt as layers ---------- */
+      .win { position: absolute; }
+      .pose { position: absolute; inset: 0; transform-style: preserve-3d; }
+      .panel { position: absolute; inset: 0; background: #FFFDF8; border-radius: 36px; border: 2px solid rgba(9, 49, 79, 0.12); box-shadow: 0 40px 120px rgba(9, 49, 79, 0.16), 0 0 0 3px rgba(29, 91, 214, 0.08); }
+      .clipbox { position: absolute; inset: 0; border-radius: 36px; overflow: hidden; }
+      .topbar { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 26px 36px; font-size: 24px; font-weight: 600; color: var(--soft); }
+      .brand { display: flex; align-items: center; gap: 14px; color: var(--ink); font-weight: 700; }
+      .brand img { width: 36px; display: block; }
+      .stage { color: var(--navy); }
+      .thread { position: absolute; display: flex; flex-direction: column; gap: 26px; }
+      .eyebrow { font-size: 20px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #9A6200; }
+      .stepline { font-family: "Afacad", sans-serif; font-weight: 600; font-size: 36px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.15; }
+      .meta { align-self: flex-end; font-size: 20px; font-weight: 600; color: var(--soft); margin-bottom: -16px; }
+      .bubble { align-self: flex-end; max-width: 78%; background: var(--cream); color: var(--brown); border: 2px solid rgba(71, 46, 0, 0.14); border-radius: 32px 32px 8px 32px; padding: 20px 30px; font-size: 30px; line-height: 1.45; }
+      .ai { display: flex; gap: 20px; align-items: flex-start; }
+      .avatar { flex: none; width: 62px; height: 62px; border-radius: 50%; overflow: hidden; background: var(--paper); border: 2px solid var(--line); }
+      .avatar img { width: 100%; height: 100%; object-fit: contain; display: block; }
+      .avatar.kemi img { object-fit: cover; object-position: 50% 12%; transform: scale(1.6); transform-origin: 50% 8%; }
+      .col { flex: 1; position: relative; display: grid; gap: 20px; }
+      .reply { background: #fff; border: 2px solid var(--line); border-radius: 28px; padding: 26px 32px; font-size: 30px; line-height: 1.5; color: #33414E; }
+      .badges { display: flex; align-items: center; gap: 16px; }
+      .badge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 20px; border-radius: 999px; font-size: 24px; font-weight: 800; white-space: nowrap; }
+      .badge.res { background: var(--mint-100); color: var(--mint-700); border: 2px solid rgba(18, 151, 103, 0.22); }
+      .shield { display: block; width: 22px; height: 24px; background: currentColor; clip-path: polygon(50% 0, 100% 18%, 100% 55%, 50% 100%, 0 55%, 0 18%); }
+      .badge-note { font-size: 24px; color: var(--mid); }
+      .coach { flex: 1; display: flex; gap: 16px; background: var(--mint-100); color: #173F2B; border-radius: 28px; padding: 24px 30px; font-size: 28px; line-height: 1.5; }
+      .tick { flex: none; position: relative; width: 36px; height: 36px; border-radius: 50%; border: 4px solid var(--mint-700); margin-top: 6px; }
+      .tick::after { content: ""; position: absolute; left: 28%; top: 16%; width: 30%; height: 52%; border: solid var(--mint-700); border-width: 0 4px 4px 0; transform: rotate(45deg); }
+      .thinkbar { position: relative; height: 14px; border-radius: 999px; background: #FBF0DB; overflow: hidden; }
+      .thinkbar i { position: absolute; inset: 0; display: block; background: var(--accent); border-radius: inherit; transform-origin: 0 50%; }
+
+      .composer { position: absolute; background: #fff; border: 2px solid rgba(9, 49, 79, 0.26); border-radius: 32px; box-shadow: 0 20px 60px rgba(7, 17, 39, 0.08); }
+      .composer.focus { border-color: var(--accent); box-shadow: 0 0 0 6px rgba(29, 91, 214, 0.12), 0 20px 60px rgba(7, 17, 39, 0.10); }
+      .c-text { padding: 28px 34px 10px; font-size: 32px; line-height: 1.45; color: var(--ink); }
+      .c-foot { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px 14px 34px; font-size: 22px; color: var(--soft); }
+      .ask { display: inline-flex; align-items: center; gap: 10px; height: 74px; padding: 0 34px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 28px; font-weight: 700; }
+      .send { display: grid; place-items: center; width: 74px; height: 74px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 34px; font-weight: 800; }
+      .dots { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; color: var(--mid); }
+      .dots i { display: block; width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--accent); background: #fff; }
+      .caret { display: inline-block; width: 3px; height: 1.1em; background: var(--accent); vertical-align: -0.15em; margin-left: 2px; }
+      .sel { border-radius: 6px; }
+
+      .judge { position: absolute; background: rgba(255, 255, 255, 0.96); border: 2px solid rgba(9, 49, 79, 0.2); border-radius: 36px; padding: 28px 30px; box-shadow: 0 24px 70px rgba(7, 17, 39, 0.10); }
+      .judge-q { font-size: 28px; font-weight: 800; margin-bottom: 18px; }
+      .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      .opt { display: grid; grid-template-columns: auto 1fr; gap: 18px; padding: 22px 24px; border: 2px solid rgba(9, 49, 79, 0.26); border-radius: 26px; background: #fff; }
+      .radio { position: relative; width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(9, 49, 79, 0.3); margin-top: 2px; }
+      .radio i { position: absolute; inset: 5px; border-radius: 50%; background: var(--accent); display: block; }
+      .opt b { display: block; font-size: 30px; }
+      .opt small { display: block; margin-top: 6px; font-size: 23px; line-height: 1.4; color: var(--mid); }
+
+      .weak { display: inline-block; background: var(--amber); color: var(--brown); padding: 0 26px 10px; border-radius: 20px; }
+      .pill { display: inline-flex; align-items: center; justify-content: center; gap: 16px; height: 104px; padding: 0 58px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 40px; font-weight: 800; white-space: nowrap; }
+      .arrow { display: block; width: 34px; height: 34px; }
+
+      /* morph cards (anchors that travel between shots) */
+      .morph { position: absolute; overflow: hidden; transform-origin: 50% 50%; will-change: transform; }
+
+      #cursor { position: absolute; left: 0; top: 0; width: 76px; height: 90px; filter: drop-shadow(0 6px 10px rgba(7, 17, 39, 0.25)); transform-origin: 34% 6%; }
+      .ripple { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; border: 4px solid rgba(29, 91, 214, 0.55); }
+      #zt { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: var(--accent); }
+    </style>
+  </head>
+  <body>
+        <svg data-hf-id="hf-30au" width="0" height="0" style="position:absolute" aria-hidden="true">
+          <defs data-hf-id="hf-mh0t">
+            <symbol data-hf-id="hf-in8k" id="hand" viewBox="0 0 32 38">
+              <path data-hf-id="hf-0bgs" d="M11 2.5c1.4 0 2.5 1.1 2.5 2.5v9.2l1-.1c.4-1.1 1.4-1.8 2.5-1.8 1.3 0 2.3.9 2.5 2.1.5-.3 1-.4 1.6-.4 1.3 0 2.4 1 2.5 2.3.4-.2.9-.3 1.4-.3 1.4 0 2.5 1.1 2.5 2.5v7c0 5-4 9-9 9h-2.6c-2.7 0-5.2-1.3-6.8-3.4l-5.6-7.6c-.8-1.1-.6-2.7.5-3.5 1-.8 2.5-.7 3.4.3l1.6 1.8V5c0-1.4 1.1-2.5 2.5-2.5z" fill="#fff" stroke="#0A2437" stroke-width="2" stroke-linejoin="round" />
+            </symbol>
+          </defs>
+        </svg>
+    <div data-hf-id="hf-j7pz" id="root" data-composition-id="main" data-start="0" data-duration="36.9" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-2xc0" id="bg">
+        <div data-hf-id="hf-re09" class="bloom" id="bl-blue" data-layout-allow-overflow=""></div><div data-hf-id="hf-vmup" class="bloom" id="bl-cream" data-layout-allow-overflow=""></div>
+        <div data-hf-id="hf-op2a" class="bloom" id="bl-amber" data-layout-allow-overflow=""></div><div data-hf-id="hf-dl11" class="bloom" id="bl-mint" data-layout-allow-overflow=""></div>
+      </div>
+      <!-- Voiceover: Ifeoma Odumodu (ElevenLabs, eleven_multilingual_v2). The film is timed to these lines. -->
+      <audio id="vo1" src="assets/vo/vo1-title.mp3" data-start="0.45" data-duration="1.62" data-track-index="2"></audio>
+      <audio id="vo2" src="assets/vo/vo2-window.mp3" data-start="2.35" data-duration="1.75" data-track-index="2"></audio>
+      <audio id="vo3" src="assets/vo/vo3-ask.mp3" data-start="4.15" data-duration="3.89" data-track-index="2"></audio>
+      <audio id="vo4" src="assets/vo/vo4-answer.mp3" data-start="8.75" data-duration="4.1" data-track-index="2"></audio>
+      <audio id="vo5" src="assets/vo/vo5-judge.mp3" data-start="12.95" data-duration="3.16" data-track-index="2"></audio>
+      <audio id="vo6" src="assets/vo/vo6-verdict.mp3" data-start="16.8" data-duration="2.3" data-track-index="2"></audio>
+      <audio id="vo7" src="assets/vo/vo7-redesign.mp3" data-start="19.15" data-duration="4.6" data-track-index="2"></audio>
+      <audio id="vo8" src="assets/vo/vo8-cant.mp3" data-start="25.0" data-duration="4.08" data-track-index="2"></audio>
+      <audio id="vo9" src="assets/vo/vo9-begin.mp3" data-start="29.5" data-duration="6.45" data-track-index="2"></audio>
+
+
+      <div data-hf-id="hf-b5xi" id="film" class="clip" data-start="0" data-duration="36.9" data-track-index="1">
+
+        <div data-hf-id="hf-ftaq" id="cam">
+          <!-- ===== 01 Title ===== -->
+          <div data-hf-id="hf-fgvu" class="shot" id="s1">
+            <div data-hf-id="hf-7sgj" class="abs" id="t-eyebrow" style="left:0;right:0;top:500px;text-align:center;font-size:30px;font-weight:800;letter-spacing:0.12em;color:#9A6200">THE FLIP TEST</div>
+            <div data-hf-id="hf-n2ps" class="abs disp" id="t-lock" style="left:0;right:0;top:452px;display:flex;justify-content:center;align-items:center;gap:22px;font-size:150px;color:var(--ink)">
+              <span data-hf-id="hf-46mf" class="w" id="t-a">Spot the</span><span data-hf-id="hf-5vav" class="w weak" id="t-weak">Weak</span><span data-hf-id="hf-hrsr" class="w" id="t-b">Question</span>
+            </div>
+          </div>
+
+          <!-- ===== 02 Window rise ===== -->
+          <div data-hf-id="hf-birt" class="shot" id="s2">
+            <div data-hf-id="hf-wxfx" class="win" id="w2" style="left:400px;top:150px;width:1180px;height:800px">
+              <div data-hf-id="hf-zfdu" class="pose" id="w2p">
+                <div data-hf-id="hf-owjm" class="panel"></div>
+                <div data-hf-id="hf-mfox" class="clipbox">
+                  <div data-hf-id="hf-mndw" class="topbar"><span data-hf-id="hf-2zzn" class="brand"><img data-hf-id="hf-k5cu" src="assets/img/miva-mark.png" alt="">Spot the Weak Question</span><span data-hf-id="hf-4vl8" class="stage">Run the flip test</span></div>
+                  <div data-hf-id="hf-f3cc" class="thread" style="top:150px;left:120px;right:120px">
+                    <span data-hf-id="hf-1aat" class="eyebrow">Run the flip test</span>
+                    <span data-hf-id="hf-5ej7" class="stepline">Ask the AI each question, the way a student would.</span>
+                  </div>
+                  <div data-hf-id="hf-rcy8" class="composer" style="left:120px;right:120px;bottom:46px">
+                    <div data-hf-id="hf-h6im" class="c-text">Define opportunity cost.</div>
+                    <div data-hf-id="hf-m4t4" class="c-foot"><span data-hf-id="hf-052h">Send it as a student would</span><span data-hf-id="hf-t4t6" class="ask">Ask AI ↑</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 03 Ask like a student ===== -->
+          <div data-hf-id="hf-ar40" class="shot" id="s3">
+            <div data-hf-id="hf-jubv" class="headline" id="h3" style="top:210px"><span data-hf-id="hf-zdvt" class="w">Ask</span><span data-hf-id="hf-cqxh" class="w">it</span><span data-hf-id="hf-ppkh" class="w em">like</span><span data-hf-id="hf-ztxd" class="w em">a</span><span data-hf-id="hf-m93d" class="w em">student</span><span data-hf-id="hf-q1rl" class="w">would</span></div>
+            <div data-hf-id="hf-tqc9" class="composer focus" id="c3" style="left:360px;width:1200px;top:500px">
+              <div data-hf-id="hf-fx2l" class="c-text" id="c3t" style="font-size:40px">Define opportunity cost.</div>
+              <div data-hf-id="hf-by9c" class="c-foot"><span data-hf-id="hf-hq59">Send it as a student would</span><span data-hf-id="hf-sabd" class="ask" id="c3ask" style="height:86px;font-size:32px">Ask AI ↑</span></div>
+            </div>
+          </div>
+
+          <!-- ===== 04 Sage answers (also the camera's set for 05) ===== -->
+          <div data-hf-id="hf-6szz" class="shot" id="s4">
+            <div data-hf-id="hf-v1ks" class="win" id="w4" data-layout-allow-overflow="" style="left:170px;top:70px;width:1580px;height:1060px;transform-origin:0 0">
+              <div data-hf-id="hf-6hyc" class="panel" id="w4bg"></div>
+              <div data-hf-id="hf-a023" class="thread" style="top:120px;left:150px;right:150px;gap:32px">
+                <span data-hf-id="hf-mo75" class="meta" id="w4meta" style="font-size:26px">Question</span>
+                <div data-hf-id="hf-lh5j" class="bubble" id="b4" style="font-size:38px">Define opportunity cost.</div>
+                <div data-hf-id="hf-ki20" class="ai" id="row4">
+                  <span data-hf-id="hf-oneg" class="avatar" style="width:84px;height:84px"><img data-hf-id="hf-w0vl" src="assets/img/sage-avatar.png" alt=""></span>
+                  <div data-hf-id="hf-7s1i" class="col">
+                    <div data-hf-id="hf-bxpx" class="thinkbar" id="tb4" style="width:420px"><i data-hf-id="hf-mlgn" id="tb4i" data-layout-allow-overflow=""></i></div>
+                    <div data-hf-id="hf-b059" class="reply" id="r4" style="font-size:40px">Opportunity cost is the value of the next best alternative you give up when you make a choice.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 05 Judge it ===== -->
+          <div data-hf-id="hf-2uvy" class="shot" id="s5">
+            <div data-hf-id="hf-qqcz" class="headline" id="h5" style="top:96px;color:var(--ink)"><span data-hf-id="hf-z226" class="w k">Judge</span><span data-hf-id="hf-mdqg" class="w k">it.</span></div>
+            <div data-hf-id="hf-3lgs" class="judge" id="j5" style="left:300px;right:300px;top:600px">
+              <div data-hf-id="hf-mdm7" class="judge-q">Is this question…</div>
+              <div data-hf-id="hf-a4xe" class="opts">
+                <div data-hf-id="hf-p8ep" class="opt" id="o5v"><span data-hf-id="hf-pb6a" class="radio" id="rad5"><i data-hf-id="hf-52hk" id="rad5i"></i></span><span data-hf-id="hf-uckh"><b data-hf-id="hf-b851">Vulnerable</b><small data-hf-id="hf-3tw1">AI can answer it without anything from your course.</small></span></div>
+                <div data-hf-id="hf-rnyb" class="opt"><span data-hf-id="hf-m7jq" class="radio"></span><span data-hf-id="hf-l73p"><b data-hf-id="hf-lxtw">Resilient</b><small data-hf-id="hf-x0yx">AI can't answer it without something only your class has.</small></span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 06 Verdict (held) ===== -->
+          <div data-hf-id="hf-ywrx" class="shot" id="s6">
+            <div data-hf-id="hf-fl9o" class="win" id="w6" data-layout-allow-overflow="" style="left:150px;top:220px;width:1620px;height:980px">
+              <div data-hf-id="hf-7cie" class="pose" id="w6p">
+                <div data-hf-id="hf-gxly" class="panel"></div>
+                <div data-hf-id="hf-84ej" class="thread" style="top:70px;left:110px;right:110px;gap:32px">
+                  <span data-hf-id="hf-ntlu" class="meta" id="m6" style="font-size:28px">Your judgement</span>
+                  <div data-hf-id="hf-a9j4" class="bubble" id="b6" style="font-weight:800;font-size:42px">Vulnerable</div>
+                  <div data-hf-id="hf-m34v" class="ai" id="k6">
+                    <span data-hf-id="hf-ldf2" class="avatar kemi" style="width:84px;height:84px"><img data-hf-id="hf-2paq" src="assets/img/kemi-talk.png" alt=""></span>
+                    <div data-hf-id="hf-93gc" class="coach" style="font-size:40px;padding:32px 40px"><span data-hf-id="hf-lmrg" class="tick" style="width:46px;height:46px"></span><span data-hf-id="hf-r6ws"><b data-hf-id="hf-wzxm">Yes, vulnerable.</b> AI answered without knowing anything about your course. A student could paste that straight in.</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div data-hf-id="hf-gs1s" class="headline" id="h6" style="top:70px"><span data-hf-id="hf-onlk" class="w k">Instant</span><span data-hf-id="hf-36d9" class="w k">answer</span><span data-hf-id="hf-8l0f" class="w">=</span><span data-hf-id="hf-yc9m" class="w em">weak</span><span data-hf-id="hf-uwg2" class="w em">question</span></div>
+          </div>
+
+          <!-- ===== 07 Make it need your class ===== -->
+          <div data-hf-id="hf-vxic" class="shot" id="s7">
+            <div data-hf-id="hf-wfjb" class="win" id="w7" data-layout-allow-overflow="" style="left:170px;top:70px;width:1580px;height:1060px"><div data-hf-id="hf-hbwz" class="panel"></div></div>
+            <div data-hf-id="hf-hxjj" class="headline" id="h7" style="top:180px"><span data-hf-id="hf-oysi" class="w">Make</span><span data-hf-id="hf-42vd" class="w">it</span><span data-hf-id="hf-67bg" class="w">need</span><span data-hf-id="hf-t1j9" class="w em">your</span><span data-hf-id="hf-bxu2" class="w em">class</span></div>
+            <div data-hf-id="hf-tq0p" class="composer focus" id="c7" style="left:260px;right:260px;top:430px">
+              <div data-hf-id="hf-iot6" class="c-text" id="c7tx" style="font-size:44px;padding-top:36px;min-height:202px"><span data-hf-id="hf-49hb" id="c7t">Define opportunity cost.</span><span data-hf-id="hf-puwh" class="caret" id="c7c"></span></div>
+              <div data-hf-id="hf-4kqr" class="c-foot" style="font-size:26px"><span data-hf-id="hf-r6mh" class="dots"><i data-hf-id="hf-gwgf" id="d7a"></i><i data-hf-id="hf-wt6k"></i><span data-hf-id="hf-5csr" id="d7l">2 tries left</span></span><span data-hf-id="hf-4s2o" class="send" id="c7send">↑</span></div>
+            </div>
+          </div>
+
+          <!-- ===== 08 Now AI can't ===== -->
+          <div data-hf-id="hf-d277" class="shot" id="s8">
+            <div data-hf-id="hf-abd6" class="win" id="w8" data-layout-allow-overflow="" style="left:150px;top:220px;width:1620px;height:980px">
+              <div data-hf-id="hf-x9es" class="pose" id="w8p">
+                <div data-hf-id="hf-hq80" class="panel"></div>
+                <div data-hf-id="hf-xmqm" class="thread" style="top:60px;left:110px;right:110px;gap:30px">
+                  <div data-hf-id="hf-1viu" class="bubble" id="b8" style="font-size:34px">Using the price data from our week-two market survey, what was the stall's opportunity cost?</div>
+                  <div data-hf-id="hf-e8us" class="ai" id="row8">
+                    <span data-hf-id="hf-zya8" class="avatar" style="width:84px;height:84px"><img data-hf-id="hf-hpph" src="assets/img/sage-avatar.png" alt=""></span>
+                    <div data-hf-id="hf-vmze" class="col">
+                      <div data-hf-id="hf-abjt" class="thinkbar" id="tb8" style="position:absolute;left:0;top:18px;width:420px"><i data-hf-id="hf-ddsb" id="tb8i" data-layout-allow-overflow=""></i></div>
+                      <div data-hf-id="hf-1bhc" class="badges"><span data-hf-id="hf-8np8" class="badge res" id="bd8" style="font-size:32px;padding:10px 26px"><span data-hf-id="hf-zbve" class="shield"></span>Resilient</span><span data-hf-id="hf-cgkz" class="badge-note" id="bn8" style="font-size:30px">It depends on data only your class has.</span></div>
+                      <div data-hf-id="hf-q10p" class="reply" id="r8" style="font-size:40px">I don't have the data from your week two session, so I can't answer this properly.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div data-hf-id="hf-7616" class="headline" id="h8" style="top:70px"><span data-hf-id="hf-0wdc" class="w">Now</span><span data-hf-id="hf-hlbq" class="w">AI</span><span data-hf-id="hf-slib" class="w em">can't</span><span data-hf-id="hf-rnsi" class="w">answer</span><span data-hf-id="hf-59sg" class="w">it</span></div>
+          </div>
+
+          <!-- ===== 09 Let's begin ===== -->
+          <div data-hf-id="hf-6whe" class="shot" id="s9">
+            <div data-hf-id="hf-hx8a" class="abs" id="e-title" style="left:0;right:0;top:250px;display:flex;justify-content:center;align-items:center;gap:26px">
+              <img data-hf-id="hf-4uw6" src="assets/img/miva-mark.png" alt="" style="width:84px;display:block">
+              <span data-hf-id="hf-y69c" class="disp" style="font-size:96px;color:var(--ink)">Spot the <span data-hf-id="hf-ui5q" class="weak" style="padding:0 18px 6px;margin:0 6px">Weak</span> Question</span>
+            </div>
+            <div data-hf-id="hf-wbqn" class="abs" style="left:0;right:0;top:500px;display:flex;justify-content:center"><span data-hf-id="hf-vkbd" class="pill" id="e-pill">Let's begin <svg data-hf-id="hf-p2ld" class="arrow" viewBox="0 0 24 24" fill="none"><path data-hf-id="hf-0qdc" d="M4 12h15m-6-6 6 6-6 6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span></div>
+            <div data-hf-id="hf-f5gr" class="abs" id="e-plan" style="left:0;right:0;top:690px;display:flex;justify-content:center;gap:0 0.4em;font-size:32px;font-weight:600;color:var(--mid)">
+              <span data-hf-id="hf-xqub" class="w">3 questions to test</span><span data-hf-id="hf-jh5p" class="w">·</span><span data-hf-id="hf-uuq6" class="w">2 to redesign</span><span data-hf-id="hf-zyk1" class="w">·</span><span data-hf-id="hf-g4hz" class="w">1 on your own</span>
+            </div>
+          </div>
+
+          <!-- ===== Anchors that travel between shots ===== -->
+          <!-- shape-only morph boxes; their text rides separately and fades early (card-morph-anchor) -->
+          <div data-hf-id="hf-7zou" class="morph composer" id="m34"></div>
+          <div data-hf-id="hf-gtsx" class="abs c-text" id="m34t" style="font-size:40px">Define opportunity cost.</div>
+          <div data-hf-id="hf-m60m" class="morph composer" id="m78"></div>
+          <div data-hf-id="hf-g9dd" class="abs c-text" id="m78t" style="font-size:44px;padding-top:36px">Using the price data from our week-two market survey, what was the stall's opportunity cost?</div>
+          <div data-hf-id="hf-vz8c" class="morph" id="hb" style="border-radius:999px;background:#E7F4EC;display:flex;align-items:center;justify-content:center"><span data-hf-id="hf-3wl7" class="badge res" id="hbin" style="font-size:32px;padding:10px 26px;border-color:transparent;background:transparent"><span data-hf-id="hf-7bwe" class="shield"></span>Resilient</span></div>
+        </div>
+
+        <!-- Interaction layer (above the camera) -->
+        <div data-hf-id="hf-33v3" class="ripple" id="rpA"></div><div data-hf-id="hf-s8dg" class="ripple" id="rpB"></div><div data-hf-id="hf-v7n1" class="ripple" id="rpC"></div>
+        <svg data-hf-id="hf-mn5w" id="cursor" viewBox="0 0 32 38" aria-hidden="true"><use data-hf-id="hf-9ikz" href="#hand" /></svg>
+        <div data-hf-id="hf-47jn" id="zt"></div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const D = 30; // authored (silent-cut) timebase; T() maps it onto the voiced film
+        // Piecewise-linear remap, knots at the beat seams. Stretches only where the voice needs room:
+        // the hold after Sage's answer, the judgement, and the end card. Everything else keeps its speed.
+        const KN = [[0, 0], [4.0, 4.0], [7.0, 7.9], [8.1, 9.0], [9.6, 12.8], [12.6, 16.2], [15.4, 19.0], [20.4, 24.0], [25.0, 28.9], [30.0, 36.9]];
+        const T = (t) => {
+          for (let i = 1; i < KN.length; i++) {
+            const [a0, b0] = KN[i - 1], [a1, b1] = KN[i];
+            if (t <= a1 || i === KN.length - 1) return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+          }
+        };
+        const DN = T(D);
+        const tl = gsap.timeline({ paused: true });
+        gsap.registerPlugin(CustomEase);
+        const DEC = CustomEase.create("emphDecel", "0.05,0.7,0.1,1");
+        const ACC = CustomEase.create("emphAccel", "0.3,0,0.8,0.15");
+        const STD = CustomEase.create("standard", "0.2,0,0,1");
+        const GIO = CustomEase.create("gentleInOut", "0.65,0,0.35,1");
+        const POP = "back.out(1.6)";
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => Array.from(document.querySelectorAll(s));
+        const blur = (px) => `blur(${px}px)`;
+
+        // fromTo with an explicit from-state on every tween: seek-safe in both directions.
+        const ft = (t, from, to, at, dur, ease) =>
+          tl.fromTo(t, from, Object.assign({ duration: T(at + dur) - T(at), ease: ease || DEC, immediateRender: false }, to), T(at));
+        // Word-by-word headline: soft-blur-in (opacity, rise, blur) with a ~120ms stagger.
+        const wordsIn = (sel, at, stagger = 0.12) =>
+          tl.fromTo(`${sel} .w`, { opacity: 0, y: 22, filter: blur(20) }, { opacity: 1, y: 0, filter: blur(0), duration: 0.42, ease: DEC, stagger, immediateRender: false }, T(at));
+        const wordsOut = (sel, at) =>
+          tl.fromTo(`${sel} .w`, { opacity: 1, y: 0, filter: blur(0) }, { opacity: 0, y: -16, filter: blur(18), duration: 0.24, ease: ACC, stagger: 0.03, immediateRender: false }, T(at));
+
+        function build() {
+          // ---------- Measure at rest (single-scene composition: build-time only) ----------
+          const root = $("#root").getBoundingClientRect();
+          const k = root.width / 1920; // Studio may scale the stage; measure in canvas px
+          const R = (el) => { const r = el.getBoundingClientRect(); return { x: (r.left - root.left) / k, y: (r.top - root.top) / k, w: r.width / k, h: r.height / k }; };
+          const C = (r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
+
+          const askR = R($("#c3ask")), radR = R($("#rad5")), sendR = R($("#c7send"));
+          const c3R = R($("#c3")), b4R = R($("#b4")), r4R = R($("#r4")), w4R = R($("#w4"));
+          const c3tR = R($("#c3t")), c7tR = R($("#c7tx"));
+          const c7R = R($("#c7")), b8R = R($("#b8")), bd8R = R($("#bd8")), pillR = R($("#e-pill"));
+
+          // ---------- Initial state at t=0 (everything after the title is hidden) ----------
+          gsap.set(["#s2", "#s3", "#s4", "#s5", "#s6", "#s7", "#s8", "#s9", "#m34", "#m34t", "#m78", "#m78t", "#hb", "#cursor", "#zt", ".ripple"], { opacity: 0 });
+          gsap.set(".ripple", { scale: 0 });
+          gsap.set(["#t-eyebrow", "#t-a", "#t-b", "#t-weak", ".headline .w", "#e-plan .w", "#c3", "#j5", "#c7"], { opacity: 0 });
+
+          // Cursor, ripples and the zoom dot live above the camera, so map stage points through
+          // the camera's slow push (scale 1 → 1.035 about the centre, sine.inOut over the film).
+          const camS = (t) => 1 + 0.035 * (-(Math.cos(Math.PI * (T(t) / DN)) - 1) / 2);
+          const viaCam = (p, t) => ({ x: 960 + (p.x - 960) * camS(t), y: 540 + (p.y - 540) * camS(t) });
+
+          // ---------- Ambient: blooms drift for the whole film; camera never fully still ----------
+          ft("#bl-blue", { x: 0, y: 0 }, { x: 70, y: 50 }, 0, D, "sine.inOut");
+          ft("#bl-cream", { x: 0, y: 0 }, { x: -60, y: 60 }, 0, D, "sine.inOut");
+          ft("#bl-amber", { x: 0, y: 0 }, { x: 60, y: -50 }, 0, D, "sine.inOut");
+          ft("#bl-mint", { x: 0, y: 0 }, { x: -70, y: -40 }, 0, D, "sine.inOut");
+          ft("#cam", { scale: 1 }, { scale: 1.035 }, 0, D, "sine.inOut");
+
+          // ===== 01 Title (0.0–2.4) =====
+          ft("#t-eyebrow", { opacity: 0, y: 20, scale: 1.05, filter: blur(20) }, { opacity: 1, y: 0, scale: 1, filter: blur(0) }, 0.05, 0.35);
+          ft("#t-eyebrow", { opacity: 1, y: 0, filter: blur(0) }, { opacity: 0, y: -14, filter: blur(16) }, 0.62, 0.2, ACC);
+          // "Spot the" and "Question" arrive from slightly inside the gap; "Weak" lands last and pushes them out.
+          ft("#t-a", { opacity: 0, x: 120, filter: blur(20) }, { opacity: 1, x: 70, filter: blur(0) }, 0.72, 0.42);
+          ft("#t-b", { opacity: 0, x: -120, filter: blur(20) }, { opacity: 1, x: -70, filter: blur(0) }, 0.78, 0.42);
+          ft("#t-weak", { opacity: 0, scale: 0.6, rotation: 0, filter: blur(15) }, { opacity: 1, scale: 1, rotation: -3, filter: blur(0), ease: POP }, 1.12, 0.42);
+          ft(["#t-a", "#t-b"], { x: (i) => (i ? -70 : 70) }, { x: 0, ease: STD }, 1.12, 0.42);
+          ft("#t-lock", { scale: 1 }, { scale: 1.03 }, 1.5, 0.5, "sine.out");
+          ft("#t-lock", { scale: 1.03, opacity: 1, filter: blur(0) }, { scale: 1.15, opacity: 0, filter: blur(25) }, 2.0, 0.4, ACC);
+
+          // ===== 02 Window rise (2.3–4.1): rises from bottom-right, defocused, settles into its 3D pose =====
+          ft("#s2", { opacity: 0 }, { opacity: 1 }, 2.3, 0.15, "none");
+          ft("#w2", { x: 150, y: 170, filter: blur(30) }, { x: 0, y: 0, filter: blur(0) }, 2.3, 0.6);
+          ft("#w2p", { rotationY: -24, rotationX: 9, transformPerspective: 2000 }, { rotationY: -10, rotationX: 4, transformPerspective: 2000 }, 2.3, 0.75);
+          ft("#w2", { scale: 1 }, { scale: 1.025 }, 2.9, 1.1, "sine.inOut");
+          // Defocus hand-off: the window recedes; the composer comes forward sharp.
+          ft("#w2", { filter: blur(0), opacity: 1 }, { filter: blur(14), opacity: 0.45 }, 3.95, 0.35, STD);
+          ft("#s2", { opacity: 1 }, { opacity: 0 }, 6.45, 0.45, STD); // recedes fully as shot 04's window takes over
+
+          // ===== 03 Ask like a student (4.0–7.0) =====
+          ft("#s3", { opacity: 0 }, { opacity: 1 }, 3.98, 0.12, "none");
+          ft("#c3", { opacity: 0, y: 110, scale: 0.9, filter: blur(10) }, { opacity: 1, y: 0, scale: 1, filter: blur(0) }, 3.98, 0.5);
+          wordsIn("#h3", 4.2);
+          // Cursor: arrives on a curved path before the click, rests, presses, ripples, leaves.
+          const tipX = 26, tipY = 5; // fingertip inside the 76px hand
+          const ask = viaCam(C(askR), 5.6);
+          ft("#cursor", { opacity: 0, x: 1960, y: 1120 }, { opacity: 1, x: ask.x - tipX, ease: STD }, 4.85, 0.6);
+          ft("#cursor", { y: 1120 }, { y: ask.y - tipY, ease: "power3.out" }, 4.85, 0.6);
+          ft(["#cursor"], { scale: 1 }, { scale: 0.92, duration: 0.12, ease: "power2.in", yoyo: true, repeat: 1 }, 5.6, 0.12);
+          ft("#c3ask", { scale: 1 }, { scale: 0.95, duration: 0.12, ease: "power2.in", yoyo: true, repeat: 1 }, 5.6, 0.12);
+          gsap.set("#rpA", { left: ask.x, top: ask.y });
+          ft("#rpA", { opacity: 1, scale: 0 }, { opacity: 0, scale: 3.2, ease: "power2.out" }, 5.62, 0.6);
+          ft("#cursor", { opacity: 1, x: ask.x - tipX, y: ask.y - tipY }, { opacity: 0, x: ask.x + 160, y: ask.y + 220, ease: ACC }, 5.95, 0.35);
+          wordsOut("#h3", 6.3);
+          // Shape morph: composer → message bubble (uniform scale + paint channels), lands in shot 04.
+          const m34 = $("#m34");
+          gsap.set(m34, { left: c3R.x, top: c3R.y, width: c3R.w, height: c3R.h });
+          const s34 = b4R.w / c3R.w;
+          gsap.set("#m34t", { left: c3tR.x, top: c3tR.y, width: c3tR.w, transformOrigin: `${C(c3R).x - c3tR.x}px ${C(c3R).y - c3tR.y}px` });
+          const d34 = { x: C(b4R).x - C(c3R).x, y: C(b4R).y - C(c3R).y };
+          ft("#s3", { opacity: 1 }, { opacity: 0 }, 6.4, 0.01, "none");
+          ft(["#m34", "#m34t"], { opacity: 0 }, { opacity: 1 }, 6.4, 0.01, "none");
+          ft(m34, { x: 0, y: 0, scaleX: 1, scaleY: 1, backgroundColor: "#ffffff", borderColor: "rgba(29,91,214,1)" },
+             { x: d34.x, y: d34.y, scaleX: b4R.w / c3R.w, scaleY: b4R.h / c3R.h, backgroundColor: "#FCEBCC", borderColor: "rgba(71,46,0,0.14)", ease: STD }, 6.42, 0.6);
+          ft("#m34t", { opacity: 1, x: 0, y: 0, scale: 1 }, { opacity: 0, x: d34.x * 0.4, y: d34.y * 0.4, scale: 1 - 0.4 * (1 - b4R.w / c3R.w), ease: STD }, 6.42, 0.22);
+
+          // ===== 04 Sage answers (6.5–9.6): window refocuses behind the travelling bubble, camera pushes in =====
+          ft("#s4", { opacity: 0 }, { opacity: 1 }, 6.5, 0.4, STD);
+          ft("#w4", { scale: 0.94, filter: blur(18) }, { scale: 1, filter: blur(0) }, 6.5, 0.9);
+          gsap.set("#b4", { opacity: 0 });
+          ft("#b4", { opacity: 0 }, { opacity: 1 }, 6.8, 0.2, "power1.out"); // real bubble arrives as the shape lands
+          ft(m34, { opacity: 1 }, { opacity: 0 }, 7.0, 0.06, "none");
+          gsap.set(["#r4", "#tb4"], { opacity: 0 });
+          ft("#tb4", { opacity: 0 }, { opacity: 1 }, 7.2, 0.15, "none");
+          ft("#tb4i", { scaleX: 0 }, { scaleX: 1, ease: "power1.inOut" }, 7.25, 0.65);
+          ft("#tb4i", { xPercent: 0 }, { xPercent: 100, ease: ACC }, 7.95, 0.25); // retracts toward its right end
+          ft("#tb4", { opacity: 1 }, { opacity: 0 }, 8.15, 0.1, "none");
+          ft("#r4", { opacity: 0, y: 22, filter: blur(18) }, { opacity: 1, y: 0, filter: blur(0) }, 8.05, 0.45);
+          ft("#w4", { scale: 1, x: 0, y: 0 }, { scale: 1.02, x: -12, y: -8 }, 8.5, 1.1, "sine.inOut");
+
+          // ===== 05 Judge it (9.6–12.6): camera pulls back so the reply lands in its slot; the rest defocuses =====
+          const sJ = 0.75;
+          const tx = 382 - (w4R.x + sJ * (r4R.x - w4R.x));
+          const ty = 250 - (w4R.y + sJ * (r4R.y - w4R.y));
+          ft("#w4", { scale: 1.02, x: -12, y: -8 }, { scale: sJ, x: tx - 0, y: ty, ease: STD }, 9.6, 0.7);
+          ft("#w4bg", { filter: blur(0), opacity: 1 }, { filter: blur(14), opacity: 0.45, ease: STD }, 9.6, 0.7);
+          ft(["#b4", "#w4meta"], { filter: blur(0), opacity: 1 }, { filter: blur(14), opacity: 0, ease: STD }, 9.6, 0.5); // clears the headline's space
+          ft("#s5", { opacity: 0 }, { opacity: 1 }, 9.95, 0.05, "none");
+          wordsIn("#h5", 9.95, 0.14);
+          ft("#j5", { opacity: 0, y: 70, filter: blur(16) }, { opacity: 1, y: 0, filter: blur(0) }, 10.15, 0.5);
+          gsap.set("#rad5i", { scale: 0 });
+          const rad = viaCam(C(radR), 11.6);
+          ft("#cursor", { opacity: 0, x: 1960, y: 1120 }, { opacity: 1, x: rad.x - tipX, ease: STD }, 10.45, 0.6);
+          ft("#cursor", { y: 1120 }, { y: rad.y - tipY, ease: "power3.out" }, 10.45, 0.6);
+          ft("#cursor", { scale: 1 }, { scale: 0.92, duration: 0.12, ease: "power2.in", yoyo: true, repeat: 1 }, 11.15, 0.12);
+          gsap.set("#rpB", { left: rad.x, top: rad.y });
+          ft("#rpB", { opacity: 1, scale: 0 }, { opacity: 0, scale: 3, ease: "power2.out" }, 11.17, 0.55);
+          ft("#o5v", { borderColor: "rgba(9,49,79,0.26)", backgroundColor: "#ffffff", boxShadow: "inset 0 0 0 0px rgba(29,91,214,1)" },
+             { borderColor: "rgba(29,91,214,1)", backgroundColor: "#F4F8FF", boxShadow: "inset 0 0 0 2px rgba(29,91,214,1)", ease: STD }, 11.18, 0.2);
+          ft("#rad5", { borderColor: "rgba(9,49,79,0.3)" }, { borderColor: "rgba(29,91,214,1)" }, 11.18, 0.2, STD);
+          ft("#rad5i", { scale: 0 }, { scale: 1, ease: POP }, 11.2, 0.3);
+          ft("#cursor", { opacity: 1, x: rad.x - tipX, y: rad.y - tipY }, { opacity: 0, x: rad.x + 180, y: rad.y + 240, ease: ACC }, 11.5, 0.35);
+          wordsOut("#h5", 11.75);
+          // The dot swells (anticipation), then the camera rushes into it and whites out.
+          gsap.set("#zt", { left: rad.x, top: rad.y });
+          ft("#zt", { opacity: 0, scale: 1 }, { opacity: 1, scale: 1 }, 11.85, 0.01, "none");
+          ft("#zt", { scale: 1 }, { scale: 1.35, ease: "power2.out" }, 11.86, 0.16);
+          ft("#zt", { scale: 1.35, backgroundColor: "#1D5BD6" }, { scale: 140, backgroundColor: "#FFFDF8", ease: ACC }, 12.02, 0.5);
+          ft(["#s4", "#s5"], { opacity: 1 }, { opacity: 0 }, 12.42, 0.05, "none");
+
+          // ===== 06 Verdict, held (12.5–15.4) =====
+          ft("#s6", { opacity: 0 }, { opacity: 1 }, 12.45, 0.05, "none");
+          ft("#zt", { opacity: 1 }, { opacity: 0, ease: "power1.out" }, 12.52, 0.3);
+          ft("#w6", { scale: 1.12, y: -30, filter: blur(16) }, { scale: 1, y: 0, filter: blur(0) }, 12.45, 0.8);
+          ft("#w6p", { rotationY: 0, rotationX: 0, transformPerspective: 2000 }, { rotationY: -5, rotationX: 2, transformPerspective: 2000 }, 12.45, 0.9);
+          gsap.set(["#m6", "#b6", "#k6"], { opacity: 0 });
+          ft(["#m6", "#b6"], { opacity: 0, y: 24, filter: blur(14) }, { opacity: 1, y: 0, filter: blur(0), stagger: 0.06 }, 12.7, 0.4);
+          ft("#k6", { opacity: 0, y: 30, filter: blur(14) }, { opacity: 1, y: 0, filter: blur(0) }, 13.0, 0.45);
+          wordsIn("#h6", 13.35, 0.11);
+          ft("#w6", { x: 0 }, { x: -14 }, 13.3, 1.8, "sine.inOut"); // micro-drift through the held line
+          // Seam: camera pushes in toward where the composer will be.
+          wordsOut("#h6", 15.05);
+          ft("#w6", { scale: 1, opacity: 1, filter: blur(0) }, { scale: 1.1, opacity: 0, filter: blur(16), ease: ACC }, 15.05, 0.4);
+
+          // ===== 07 Make it need your class (15.3–20.4) =====
+          ft("#s7", { opacity: 0 }, { opacity: 1 }, 15.25, 0.1, "none");
+          ft("#w7", { opacity: 0, filter: blur(14) }, { opacity: 0.45, filter: blur(14) }, 15.25, 0.4, STD);
+          ft("#c7", { opacity: 0, scale: 0.92, y: 40, filter: blur(14) }, { opacity: 1, scale: 1, y: 0, filter: blur(0) }, 15.3, 0.55);
+          wordsIn("#h7", 15.6);
+          // Typing: one deterministic driver writes the text, selection and caret from timeline time.
+          const OLD = "Define opportunity cost.";
+          const NEW = "Using the price data from our week-two market survey, what was the stall's opportunity cost?";
+          const t7 = $("#c7t"), car = $("#c7c"), dotA = $("#d7a"), triesL = $("#d7l");
+          const SEL_AT = 16.0, TYPE_AT = 16.35, TYPE_END = 19.05;
+          const proxy = { p: 0 };
+          tl.fromTo(proxy, { p: 0 }, {
+            p: 1, duration: T(20.4) - T(15.3), ease: "none", immediateRender: false,
+            onUpdate: () => {
+              const t = 15.3 + proxy.p * (20.4 - 15.3);
+              let text = OLD, selected = false;
+              if (t >= SEL_AT && t < TYPE_AT) selected = true;
+              if (t >= TYPE_AT) {
+                const f = Math.min(1, (t - TYPE_AT) / (TYPE_END - TYPE_AT));
+                // slight human unevenness, deterministic
+                const g = f + 0.012 * Math.sin(f * 40);
+                text = NEW.slice(0, Math.max(0, Math.min(NEW.length, Math.round(g * NEW.length))));
+              }
+              t7.textContent = text;
+              t7.style.background = selected ? "rgba(29, 91, 214, 0.18)" : "transparent";
+              const sent = t >= 19.65;
+              dotA.style.background = sent ? "#1D5BD6" : "#ffffff";
+              triesL.textContent = sent ? "1 try left" : "2 tries left";
+              const typing = t >= TYPE_AT && t <= TYPE_END + 0.05;
+              car.style.opacity = typing || Math.floor((t - 15.3) / 0.5) % 2 === 0 ? 1 : 0;
+            }
+          }, T(15.3));
+          const snd = viaCam(C(sendR), 19.6);
+          ft("#cursor", { opacity: 0, x: 1960, y: 1120 }, { opacity: 1, x: snd.x - tipX, ease: STD }, 18.85, 0.6);
+          ft("#cursor", { y: 1120 }, { y: snd.y - tipY, ease: "power3.out" }, 18.85, 0.6);
+          ft("#cursor", { scale: 1 }, { scale: 0.92, duration: 0.12, ease: "power2.in", yoyo: true, repeat: 1 }, 19.6, 0.12);
+          ft("#c7send", { scale: 1 }, { scale: 0.92, duration: 0.12, ease: "power2.in", yoyo: true, repeat: 1 }, 19.6, 0.12);
+          gsap.set("#rpC", { left: snd.x, top: snd.y });
+          ft("#rpC", { opacity: 1, scale: 0 }, { opacity: 0, scale: 3, ease: "power2.out" }, 19.62, 0.55);
+          ft("#cursor", { opacity: 1, x: snd.x - tipX, y: snd.y - tipY }, { opacity: 0, x: snd.x + 140, y: snd.y + 200, ease: ACC }, 19.85, 0.35);
+          wordsOut("#h7", 19.85);
+          // Shape morph: composer → message bubble in shot 08.
+          const m78 = $("#m78");
+          gsap.set(m78, { left: c7R.x, top: c7R.y, width: c7R.w, height: c7R.h });
+          gsap.set("#m78t", { left: c7tR.x, top: c7tR.y, width: c7tR.w, transformOrigin: `${C(c7R).x - c7tR.x}px ${C(c7R).y - c7tR.y}px` });
+          const d78 = { x: C(b8R).x - C(c7R).x, y: C(b8R).y - C(c7R).y };
+          ft(["#c7", "#w7"], { opacity: 1 }, { opacity: 0 }, 19.95, 0.01, "none");
+          ft(["#m78", "#m78t"], { opacity: 0 }, { opacity: 1 }, 19.95, 0.01, "none");
+          ft(m78, { x: 0, y: 0, scaleX: 1, scaleY: 1, backgroundColor: "#ffffff", borderColor: "rgba(29,91,214,1)" },
+             { x: d78.x, y: d78.y, scaleX: b8R.w / c7R.w, scaleY: b8R.h / c7R.h, backgroundColor: "#FCEBCC", borderColor: "rgba(71,46,0,0.14)", ease: STD }, 19.97, 0.6);
+          ft("#m78t", { opacity: 1, x: 0, y: 0, scale: 1 }, { opacity: 0, x: d78.x * 0.4, y: d78.y * 0.4, scale: 1 - 0.4 * (1 - b8R.w / c7R.w), ease: STD }, 19.97, 0.22);
+
+          // ===== 08 Now AI can't (20.2–25.0) =====
+          ft("#s8", { opacity: 0 }, { opacity: 1 }, 20.15, 0.4, STD);
+          ft("#w8", { scale: 0.95, filter: blur(16) }, { scale: 1, filter: blur(0) }, 20.15, 0.8);
+          gsap.set(["#b8", "#r8", "#tb8", "#bd8", "#bn8"], { opacity: 0 });
+          ft("#b8", { opacity: 0 }, { opacity: 1 }, 20.35, 0.2, "power1.out");
+          ft(m78, { opacity: 1 }, { opacity: 0 }, 20.55, 0.06, "none");
+          ft("#w8p", { rotationY: 0, rotationX: 0, transformPerspective: 2000 }, { rotationY: -5, rotationX: 2, transformPerspective: 2000, ease: STD }, 20.65, 0.8);
+          ft("#tb8", { opacity: 0 }, { opacity: 1 }, 20.75, 0.15, "none");
+          ft("#tb8i", { scaleX: 0 }, { scaleX: 1, ease: "power1.inOut" }, 20.8, 0.6);
+          ft("#tb8i", { xPercent: 0 }, { xPercent: 100, ease: ACC }, 21.45, 0.25);
+          ft("#tb8", { opacity: 1 }, { opacity: 0 }, 21.65, 0.1, "none");
+          ft("#r8", { opacity: 0, y: 22, filter: blur(18) }, { opacity: 1, y: 0, filter: blur(0) }, 21.55, 0.45);
+          ft("#bd8", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, ease: POP }, 21.95, 0.35);
+          ft("#bn8", { opacity: 0, x: -10 }, { opacity: 1, x: 0 }, 22.1, 0.35);
+          wordsIn("#h8", 22.3);
+          // Flatten before isolating, so the hand-off badge is pixel-identical.
+          ft("#w8p", { rotationY: -5, rotationX: 2, transformPerspective: 2000 }, { rotationY: 0, rotationX: 0, transformPerspective: 2000, ease: STD }, 22.85, 0.6);
+          gsap.set("#hb", { left: bd8R.x, top: bd8R.y, width: bd8R.w, height: bd8R.h });
+          ft("#hb", { opacity: 0 }, { opacity: 1 }, 23.5, 0.01, "none");
+          ft("#bd8", { opacity: 1 }, { opacity: 0 }, 23.51, 0.01, "none");
+          wordsOut("#h8", 23.6);
+          ft("#w8", { opacity: 1, filter: blur(0), scale: 1 }, { opacity: 0, filter: blur(22), scale: 0.98, ease: STD }, 23.6, 0.45);
+          // The badge alone, drawn to centre.
+          const hbC = C(bd8R);
+          ft("#hb", { x: 0, y: 0, scale: 1 }, { x: 960 - hbC.x, y: 552 - hbC.y, scale: 1.5, ease: GIO }, 24.0, 0.8);
+
+          // ===== 09 Let's begin (24.9–30): badge grows, recolours and becomes the button =====
+          const sPill = pillR.h / bd8R.h;
+          ft("#hb", { x: 960 - hbC.x, y: 552 - hbC.y, scale: 1.5, backgroundColor: "#E7F4EC" },
+             { x: C(pillR).x - hbC.x, y: C(pillR).y - hbC.y, scale: sPill, backgroundColor: "#1D5BD6", ease: STD }, 24.9, 0.6);
+          ft("#hbin", { opacity: 1, filter: blur(0) }, { opacity: 0, filter: blur(6), ease: "power1.in" }, 24.9, 0.25);
+          ft("#s9", { opacity: 0 }, { opacity: 1 }, 25.35, 0.01, "none");
+          gsap.set(["#e-pill", "#e-title"], { opacity: 0 });
+          ft("#e-pill", { opacity: 0, scale: 0.98 }, { opacity: 1, scale: 1 }, 25.38, 0.15, "power1.out");
+          ft("#hb", { opacity: 1 }, { opacity: 0 }, 25.42, 0.15, "power1.in");
+          ft("#e-title", { opacity: 0, y: 26, filter: blur(20) }, { opacity: 1, y: 0, filter: blur(0) }, 25.55, 0.5);
+          wordsIn("#e-plan", 25.85, 0.09);
+          ft("#s9", { scale: 1 }, { scale: 1.03 }, 26.2, 3.8, "sine.inOut");
+
+          window.__timelines["main"] = tl;
+        }
+
+        document.fonts.ready.then(build);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# HyperFrames working files (regenerable)
+swq-explainer-video/.hyperframes/
+swq-explainer-video/snapshots*/
+# The rendered MP4 ships inside the simulation (spot-the-weak-question-chat/assets/video/);
+# re-render with `npm run render` in swq-explainer-video.
+swq-explainer-video/renders/
+
+# Original source packages (their extracted contents are committed)
+*.zip
+
+# Local tooling and OS files
+.claude/
+.DS_Store
