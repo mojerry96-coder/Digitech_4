@@ -1,6 +1,6 @@
 # Spot the Weak Question — replication package (v2.0, chat version)
 
-This package describes **one single-page, chat-style simulation**: one conversation with Sage (the AI), one action dock, and Kemi's feedback. It replaces v1.0's open two-region layout, which learners found confusing. v1.0 remains in git history.
+This package describes **one single-page, chat-style simulation**: one conversation with Sage (the AI), one action dock, and Kemi's feedback. It replaces v1.0's open two-region layout, which learners found confusing. v1.0 and its screens remain in git history only.
 
 ## How to use in Lovable
 
@@ -30,7 +30,5 @@ Scores in the screens come from real test choices, not fixed values; the build m
 
 ## Other files
 
-- `screens/` — v1.0 reference images (superseded; kept for history).
 - `references/Original_Storyboard.pdf` — the learning storyboard (intent only).
-- `references/Clean_Minimal_Design_Master_Prompt.md` — the earlier design master prompt (superseded by the prompt's §5–§6).
 - The explainer video's source project is `../swq-explainer-video/`.

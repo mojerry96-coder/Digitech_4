@@ -195,7 +195,7 @@ Icons: Phosphor (regular, bold, fill). Status is always text + icon + colour, ne
 
 ## 7. Opener (MIVA shell)
 
-Port `opener/OPENER.md` and the reference build's `intro.js` / `intro.css` exactly, retitled:
+Port the reference build's opener (`spot-the-weak-question-chat/intro.js` and `intro.css`) exactly. Its behaviour:
 
 - Logos left→right: `ekiti.svg` 74 · `miva.svg` 164 · `tof.svg` 118 (canvas px), gap 46, 1px rules (52 tall) between them after all three settle.
 - **The row slides; the logos never fly.** Each logo fades in (opacity 0→1, blur 8→0, scale 1.1→1) at its own slot while the row re-centres on whatever has arrived. Measure layout offsets, not `getBoundingClientRect` (which includes the entry scale), and note that the transformed row may be the logos' `offsetParent`.

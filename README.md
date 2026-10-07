@@ -9,10 +9,8 @@ Lecturers practise the **flip test**: ask AI an exam question the way a student 
 | --- | --- |
 | [`spot-the-weak-question-chat/`](spot-the-weak-question-chat/) | **The simulation (current).** A chat-style build on the Fix the Prompt engine: opener, voiced explainer video, flip test with feedback, redesign with a rule-based checker, an unaided question, and the audit. Static site, no build step. |
 | [`swq-explainer-video/`](swq-explainer-video/) | The HyperFrames project for the 36.9s motion-graphics explainer that opens the simulation (storyboard, design spec, voiceover, composition). |
-| [`spot-the-weak-question/`](spot-the-weak-question/) | The earlier two-column React/Vite build, kept for reference. |
-| [`Spot_Weak_Question_Replication/`](Spot_Weak_Question_Replication/) | The original replication prompt, storyboard and reference screens. |
-| [`opener/`](opener/) | The MIVA logo opener specification and assets. |
-| [`LAYOUT-SYSTEM.md`](LAYOUT-SYSTEM.md) | The uniform scaling layout system (1440px canvas) both builds use. |
+| [`Spot_Weak_Question_Replication/`](Spot_Weak_Question_Replication/) | The Lovable build prompt (v2.0, chat version), its reference screens, and the learning storyboard. |
+| [`LAYOUT-SYSTEM.md`](LAYOUT-SYSTEM.md) | The uniform scaling layout system (1440px canvas) the simulation uses. |
 
 ## Run the simulation
 
